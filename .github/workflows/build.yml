@@ -2,9 +2,11 @@ name: build obs plugin
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master,obs27 ]
   pull_request:
-    branches: [ master ]
+    branches: [ master,obs27 ]
+  workflow_dispatch:
+    
 
 env:
   PLUGIN_NAME: obs-shaderfilter
