@@ -37,6 +37,9 @@ jobs:
       - name: Add plugin to obs cmake
         shell: cmd
         run: echo add_subdirectory(${{ env.PLUGIN_NAME }}) >> UI/frontend-plugins/CMakeLists.txt
+      - name: Add plugin to obs cmake 2
+        shell: cmd
+        run: echo add_subdirectory(${{ env.PLUGIN_NAME }}) >> plugins/CMakeLists.txt
       - name: Fetch Git Tags
         run: git fetch --prune --tags --unshallow
       - name: 'Install prerequisite: QT'
