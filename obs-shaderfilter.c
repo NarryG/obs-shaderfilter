@@ -214,18 +214,6 @@ static void shader_filter_reload_effect(struct shader_filter_data *filter)
 		use_template = true;
 	}
 
-	size_t effect_header_length = strlen(effect_template_begin);
-	size_t effect_body_length = shader_text ? strlen(shader_text) : 0;
-	size_t effect_footer_length = strlen(effect_template_end);
-	size_t effect_buffer_total_size = effect_header_length +
-					  effect_body_length +
-					  effect_footer_length;
-
-	bool use_sliders = !obs_data_get_bool(settings, "use_sliders");
-	bool use_sources = !obs_data_get_bool(settings, "use_sources");
-	bool use_shader_elapsed_time =
-		!obs_data_get_bool(settings, "use_shader_elapsed_time");
-
 	struct dstr effect_text = {0};
 
 	if (use_template) {
@@ -362,6 +350,7 @@ static bool shader_filter_from_file_changed(obs_properties_t *props,
 					    obs_property_t *p,
 					    obs_data_t *settings)
 {
+	UNUSED_PARAMETER(p);
 	struct shader_filter_data *filter = obs_properties_get_param(props);
 
 	bool from_file = obs_data_get_bool(settings, "from_file");
@@ -399,6 +388,7 @@ static bool shader_filter_file_name_changed(obs_properties_t *props,
 static bool use_sliders_changed(obs_properties_t *props, obs_property_t *p,
 				obs_data_t *settings)
 {
+	UNUSED_PARAMETER(p);
 	struct shader_filter_data *filter = obs_properties_get_param(props);
 
 	bool use_sliders = obs_data_get_bool(settings, "use_sliders");
@@ -414,6 +404,7 @@ static bool use_shader_elapsed_time_changed(obs_properties_t *props,
 					    obs_property_t *p,
 					    obs_data_t *settings)
 {
+	UNUSED_PARAMETER(p);
 	struct shader_filter_data *filter = obs_properties_get_param(props);
 
 	bool use_shader_elapsed_time =
@@ -429,6 +420,8 @@ static bool shader_filter_reload_effect_clicked(obs_properties_t *props,
 						obs_property_t *property,
 						void *data)
 {
+	UNUSED_PARAMETER(props);
+	UNUSED_PARAMETER(property);
 	struct shader_filter_data *filter = data;
 
 	filter->reload_effect = true;
@@ -507,8 +500,7 @@ static obs_properties_t *shader_filter_properties(void *data)
 	for (size_t param_index = 0; param_index < param_count; param_index++) {
 		struct effect_param_data *param =
 			(filter->stored_param_list.array + param_index);
-		gs_eparam_t *annot = gs_param_get_annotation_by_idx(
-			param->param, param_index);
+		//gs_eparam_t *annot = gs_param_get_annotation_by_idx(param->param, param_index);
 		const char *param_name = param->name.array;
 		struct dstr display_name = {0};
 		dstr_ncat(&display_name, param_name, param->name.len);
@@ -549,8 +541,8 @@ static obs_properties_t *shader_filter_properties(void *data)
 
 			break;
 		case GS_SHADER_PARAM_VEC4:
-			obs_properties_add_color(props, param_name,
-						 display_name.array);
+			obs_properties_add_color_alpha(props, param_name,
+						       display_name.array);
 			break;
 		case GS_SHADER_PARAM_TEXTURE:
 			obs_properties_add_path(
@@ -563,6 +555,7 @@ static obs_properties_t *shader_filter_properties(void *data)
 						display_name.array,
 						OBS_TEXT_MULTILINE);
 			break;
+		default:;
 		}
 		dstr_free(&display_name);
 	}
@@ -600,13 +593,11 @@ static void shader_filter_update(void *data, obs_data_t *settings)
 	for (size_t param_index = 0; param_index < param_count; param_index++) {
 		struct effect_param_data *param =
 			(filter->stored_param_list.array + param_index);
-		gs_eparam_t *annot = gs_param_get_annotation_by_idx(
-			param->param, param_index);
+		//gs_eparam_t *annot = gs_param_get_annotation_by_idx(param->param, param_index);
 		const char *param_name = param->name.array;
 		struct dstr display_name = {0};
 		dstr_ncat(&display_name, param_name, param->name.len);
 		dstr_replace(&display_name, "_", " ");
-		bool is_source = false;
 
 		switch (param->type) {
 		case GS_SHADER_PARAM_BOOL:
@@ -672,9 +663,10 @@ static void shader_filter_update(void *data, obs_data_t *settings)
 					settings, param_name,
 					(const char *)gs_effect_get_default_val(
 						param->param));
-			param->value.string =
-				(char)obs_data_get_string(settings, param_name);
+			param->value.string = (char *)obs_data_get_string(
+				settings, param_name);
 			break;
+		default:;
 		}
 	}
 }
